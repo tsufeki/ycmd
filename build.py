@@ -262,6 +262,9 @@ def ParseArguments():
   parser.add_argument( '--tern-completer',
                        action = 'store_true',
                        help   = 'Enable tern javascript completer' ),
+  parser.add_argument( '--phpcmplr-completer',
+                       action = 'store_true',
+                       help   = 'Enable PHP completer' ),
   parser.add_argument( '--all',
                        action = 'store_true',
                        help   = 'Enable all supported completers',
@@ -480,6 +483,16 @@ def SetUpTern():
   CheckCall( [ paths[ 'npm' ], 'install', '--production' ] )
 
 
+def SetUpPhpCmplr():
+  composer_command = PathToFirstExistingExecutable(
+    [ 'composer', 'composer.phar' ] )
+  if not composer_command:
+    sys.exit( 'composer is required to set up phpcmplr' )
+
+  os.chdir( p.join( DIR_OF_THIS_SCRIPT, 'third_party', 'phpcmplr' ) )
+  subprocess.check_call( [ composer_command, 'install' ] )
+
+
 def WritePythonUsedDuringBuild():
   path = p.join( DIR_OF_THIS_SCRIPT, 'PYTHON_USED_DURING_BUILDING' )
   with open( path, 'w' ) as f:
@@ -499,6 +512,8 @@ def Main():
     SetUpTern()
   if args.racer_completer or args.all_completers:
     BuildRacerd()
+  if args.phpcmplr_completer or args.all_completers:
+    SetUpPhpCmplr()
   WritePythonUsedDuringBuild()
 
 

@@ -47,6 +47,16 @@ class PhpCmplrCompleter( Completer ):
     self._server_keep_logfiles = user_options[ 'server_keep_logfiles' ]
     self._php_path = 'php'
     self._phpcmplr_path = '/home/bb/tmp/phpcmplr-stable/bin/phpcmplr.php'
+    self._phpcmplr_path = os.path.abspath(
+                            os.path.join(
+                              os.path.dirname( __file__ ),
+                              '..',
+                              '..',
+                              '..',
+                              'third_party',
+                              'phpcmplr',
+                              'bin',
+                              'phpcmplr.php' ) )
     self._phpcmplr_host = '127.0.0.1'
     self._phpcmplr_port = None
     self._phpcmplr_url = None
