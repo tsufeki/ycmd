@@ -259,7 +259,7 @@ class PhpCmplrCompleter( Completer ):
     diagnostics = []
     for diag in diagnostics_data[ 'diagnostics' ]:
       start = responses.Location( diag[ 'start' ][ 'line' ], diag[ 'start' ][ 'col' ], request_data[ 'filepath' ] )
-      # `+  1` is safe: translates from last byte of last included codepoint
+      # `+ 1` is safe: translates from last byte of last included codepoint
       # to first byte of first not included codepoint.
       end = responses.Location( diag[ 'end' ][ 'line' ], diag[ 'end' ][ 'col' ] + 1, request_data[ 'filepath' ] )
       diagnostics.append( responses.Diagnostic(
@@ -284,9 +284,9 @@ class PhpCmplrCompleter( Completer ):
       for location in goto_data[ 'goto' ] ]
 
     if len(response) == 0:
-        return responses.BuildDisplayMessageResponse( 'Definition not found' )
+      return responses.BuildDisplayMessageResponse( 'Definition not found' )
     elif len(response) == 1:
-        return response[ 0 ]
+      return response[ 0 ]
     return response
 
 
@@ -300,8 +300,41 @@ class PhpCmplrCompleter( Completer ):
 
     response = type_data[ 'type' ]
     if not response:
-        response = 'unknown'
+      response = 'unknown'
     return responses.BuildDisplayMessageResponse( response )
+
+
+  def _FixIt( self, request_data ):
+    if not self.ServerIsReady():
+      return
+
+    fix_data = self._GetResponse( '/fix',
+      { 'location': self._GetLocation( request_data ) },
+      request_data )
+
+    return responses.BuildFixItResponse(
+        [ self._MakeFixIt( fix ) for fix in fix_data[ 'fixes' ] ] )
+
+
+  def _MakeFixIt( self, data ):
+    text = data[ 'description' ]
+    chunks = []
+    for chunk_data in data[ 'chunks' ]:
+      start = responses.Location(
+          chunk_data[ 'start' ][ 'line' ],
+          chunk_data[ 'start' ][ 'col' ],
+          chunk_data[ 'start' ][ 'path' ] )
+      # `+ 1` is safe: translates from last byte of last included codepoint
+      # to first byte of first not included codepoint.
+      end = responses.Location(
+          chunk_data[ 'end' ][ 'line' ],
+          chunk_data[ 'end' ][ 'col' ] + 1,
+          chunk_data[ 'end' ][ 'path' ] )
+      chunks.append( responses.FixItChunk(
+          chunk_data[ 'replacement' ],
+          responses.Range( start, end ) ) )
+
+    return responses.FixIt( chunks[ 0 ].range.start_, chunks, text )
 
 
   def GetSubcommandsMap( self ):
@@ -314,6 +347,8 @@ class PhpCmplrCompleter( Completer ):
                            self._GoTo( request_data ) ),
       'GetType'        : ( lambda self, request_data, args:
                            self._GetType( request_data ) ),
+      'FixIt'          : ( lambda self, request_data, args:
+                           self._FixIt( request_data ) ),
     }
 
 
