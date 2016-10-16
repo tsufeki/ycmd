@@ -73,12 +73,12 @@ class PhpCmplrCompleter( Completer ):
 
 
   def Shutdown( self ):
-    if self.ServerIsRunning():
+    if self._ServerIsRunning():
       self._StopServer()
 
 
-  def ServerIsReady( self ):
-    if not self.ServerIsRunning():
+  def ServerIsHealthy( self ):
+    if not self._ServerIsRunning():
       self._logger.debug( 'PhpCmplr not running.' )
       return False
     try:
@@ -87,13 +87,13 @@ class PhpCmplrCompleter( Completer ):
       return False
 
 
-  def ServerIsRunning( self ):
+  def _ServerIsRunning( self ):
     with self._server_lock:
       return ( bool( self._phpcmplr_port ) and
                ProcessIsRunning( self._phpcmplr_phandle ) )
 
 
-  def RestartServer( self ):
+  def _RestartServer( self ):
     with self._server_lock:
       self._StopServer()
       self._StartServer()
@@ -129,7 +129,7 @@ class PhpCmplrCompleter( Completer ):
 
   def _StartServer( self ):
     with self._server_lock:
-      if self.ServerIsRunning():
+      if self._ServerIsRunning():
         return
 
       self._logger.info( 'Starting PhpCmplr' )
@@ -227,7 +227,7 @@ class PhpCmplrCompleter( Completer ):
 
 
   def ComputeCandidatesInner( self, request_data ):
-    if not self.ServerIsReady():
+    if not self._ServerIsRunning():
       return
 
     location = self._GetLocation( request_data )
@@ -249,7 +249,7 @@ class PhpCmplrCompleter( Completer ):
 
 
   def OnFileReadyToParse( self, request_data ):
-    if not self.ServerIsReady():
+    if not self._ServerIsRunning():
       return
 
     diagnostics_data = self._GetResponse( '/diagnostics',
@@ -273,7 +273,7 @@ class PhpCmplrCompleter( Completer ):
 
 
   def _GoTo( self, request_data ):
-    if not self.ServerIsReady():
+    if not self._ServerIsRunning():
       return
 
     goto_data = self._GetResponse( '/goto',
@@ -291,7 +291,7 @@ class PhpCmplrCompleter( Completer ):
 
 
   def _GetType( self, request_data ):
-    if not self.ServerIsReady():
+    if not self._ServerIsRunning():
       return
 
     type_data = self._GetResponse( '/type',
@@ -305,7 +305,7 @@ class PhpCmplrCompleter( Completer ):
 
 
   def _FixIt( self, request_data ):
-    if not self.ServerIsReady():
+    if not self._ServerIsRunning():
       return
 
     fix_data = self._GetResponse( '/fix',
@@ -342,7 +342,7 @@ class PhpCmplrCompleter( Completer ):
       'StopServer'     : ( lambda self, request_data, args:
                            self.Shutdown() ),
       'RestartServer'  : ( lambda self, request_data, args:
-                           self.RestartServer() ),
+                           self._RestartServer() ),
       'GoTo'           : ( lambda self, request_data, args:
                            self._GoTo( request_data ) ),
       'GetType'        : ( lambda self, request_data, args:
@@ -356,7 +356,7 @@ class PhpCmplrCompleter( Completer ):
     if self._phpcmplr_phandle is None:
       return ' * PhpCmplr is not running'
 
-    if not self.ServerIsRunning():
+    if not self._ServerIsRunning():
       return ( ' * PhpCmplr is not running (crashed)'
                + '\n * Server stdout: '
                + self._phpcmplr_stdout
