@@ -243,7 +243,7 @@ class PhpCmplrCompleter( Completer ):
     return responses.BuildCompletionData(
       insertion_text = data[ 'insertion' ],
       menu_text = data[ 'display' ],
-      extra_menu_info = data[ 'type' ],
+      extra_menu_info = data[ 'extended_display' ],
       kind = KINDS_MAP.get( data[ 'kind' ] ),
       detailed_info = data[ 'description' ] )
 
