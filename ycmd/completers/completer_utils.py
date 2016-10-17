@@ -253,7 +253,7 @@ DEFAULT_FILETYPE_TRIGGERS = {
   'ocaml' : [ '.', '#' ],
   'cpp,objcpp' : [ '->', '.', '::' ],
   'perl' : [ '->' ],
-  'php' : [ '->', '::' ],
+  'php' : [ '->', '::', '$' ],
   'cs,java,javascript,typescript,d,python,perl6,scala,vb,elixir,go,groovy' : [
     '.'
   ],
