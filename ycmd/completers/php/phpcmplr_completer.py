@@ -46,7 +46,6 @@ class PhpCmplrCompleter( Completer ):
     self._server_lock = threading.RLock()
     self._server_keep_logfiles = user_options[ 'server_keep_logfiles' ]
     self._php_path = 'php'
-    self._phpcmplr_path = '/home/bb/tmp/phpcmplr-stable/bin/phpcmplr.php'
     self._phpcmplr_path = os.path.abspath(
                             os.path.join(
                               os.path.dirname( __file__ ),
@@ -353,22 +352,21 @@ class PhpCmplrCompleter( Completer ):
 
 
   def DebugInfo( self, request_data ):
-    if self._phpcmplr_phandle is None:
-      return ' * PhpCmplr is not running'
+    with self._server_lock:
+      phpcmplr_server = responses.DebugInfoServer(
+        name = 'phpcmplr',
+        handle = self._phpcmplr_phandle,
+        executable = self._phpcmplr_path,
+        address = '127.0.0.1',
+        port = self._phpcmplr_port,
+        logfiles = [ self._phpcmplr_stdout, self._phpcmplr_stderr ] )
 
-    if not self._ServerIsRunning():
-      return ( ' * PhpCmplr is not running (crashed)'
-               + '\n * Server stdout: '
-               + self._phpcmplr_stdout
-               + '\n * Server stderr: '
-               + self._phpcmplr_stderr )
+      php_interpreter_item = responses.DebugInfoItem(
+        key = 'PHP interpreter',
+        value = self._php_path )
 
-    return ( ' * PhpCmplr is running on port: '
-             + str( self._phpcmplr_port )
-             + ' with pid: '
-             + str( self._phpcmplr_phandle.pid )
-             + '\n * Server stdout: '
-             + self._phpcmplr_stdout
-             + '\n * Server stderr: '
-             + self._phpcmplr_stderr )
+      return responses.BuildDebugInfoResponse(
+        name = 'PHP',
+        servers = [ phpcmplr_server ],
+        items = [ php_interpreter_item ] )
 
