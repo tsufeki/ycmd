@@ -143,16 +143,15 @@ class PhpCmplrCompleter( Completer ):
       self._logger.debug( 'Starting PhpCmplr with command: {0}'.format( ' '.join( command ) ) )
 
       try:
-        logfile_format = os.path.join( utils.PathToCreatedTempDir(),
-                                       u'phpcmplr_{port}_{std}.log' )
+        logfile_format = os.path.join( u'phpcmplr_{port}_{std}.log' )
 
-        self._phpcmplr_stdout = logfile_format.format(
+        self._phpcmplr_stdout = utils.CreateLogfile( logfile_format.format(
             port = self._phpcmplr_port,
-            std = 'stdout' )
+            std = 'stdout' ) )
 
-        self._phpcmplr_stderr = logfile_format.format(
+        self._phpcmplr_stderr = utils.CreateLogfile( logfile_format.format(
             port = self._phpcmplr_port,
-            std = 'stderr' )
+            std = 'stderr' ) )
 
         with utils.OpenForStdHandle( self._phpcmplr_stdout ) as stdout:
           with utils.OpenForStdHandle( self._phpcmplr_stderr ) as stderr:
