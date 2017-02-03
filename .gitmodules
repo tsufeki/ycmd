@@ -35,3 +35,4 @@
 [submodule "third_party/phpcmplr"]
 	path = third_party/phpcmplr
 	url = https://github.com/tsufeki/phpcmplr
+	branch = develop
